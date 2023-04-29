@@ -58,6 +58,11 @@ impl Lag1 {
     pub fn reset(&mut self, level: f64) {
         self.level = level;
     }
+
+    /// Number of samples the filter approximately needs to settle.
+    pub fn settling_len(fs: f64, tau_rise: f64) -> usize {
+        (fs * tau_rise.sqrt()) as usize
+    }
 }
 
 impl Filter for Lag1 {

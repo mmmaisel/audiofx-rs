@@ -47,6 +47,8 @@ struct Cli {
 enum Commands {
     /// Amplifier
     Amplify(effects::amplify::Settings),
+    /// Dynamic compression
+    Compressor(effects::compressor::Settings),
     /// Normalize audio loudness
     Normalize(operations::normalize::Settings),
     /// Analyze audio true peak
@@ -79,6 +81,21 @@ fn main() {
             };
             if let Err(e) = x.amplify(&mut input, &mut output) {
                 println!("\nAmplifying failed: {}", e.to_string());
+            }
+            if let Err(e) = output.finalize() {
+                println!("Finalizing wav file failed: {}", e.to_string());
+            }
+        }
+        Commands::Compressor(x) => {
+            let mut output = match &cli.output_filename {
+                Some(filename) => WavWriter::create(filename, spec).unwrap(),
+                None => {
+                    println!("No output filename was given!");
+                    return;
+                }
+            };
+            if let Err(e) = x.compress(&mut input, &mut output) {
+                println!("\nCompressing failed: {}", e.to_string());
             }
             if let Err(e) = output.finalize() {
                 println!("Finalizing wav file failed: {}", e.to_string());

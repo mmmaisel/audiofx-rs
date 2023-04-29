@@ -38,7 +38,7 @@ pub struct Settings {
     /// Algorithm to use
     mode: Mode,
     /// Target loudness in dB. Units depends on mode.
-    target: f64,
+    target_db: f64,
     /// Analyze multiple channels independently
     #[arg(short)]
     channel_independent: bool,
@@ -64,7 +64,7 @@ impl Settings {
                 let analyzer = TruePeak::new(self.channel_independent);
                 let peak = analyzer.analyze(&mut input)?;
                 peak.iter()
-                    .map(|x| (10.0_f64.powf(self.target / 20.0) / x) as f32)
+                    .map(|x| (10.0_f64.powf(self.target_db / 20.0) / x) as f32)
                     .collect::<Vec<f32>>()
             }
             Mode::Lufs => {
@@ -74,7 +74,7 @@ impl Settings {
                 loudness
                     .iter()
                     .map(|x| {
-                        (10.0_f64.powf(self.target / 10.0) / x).sqrt() as f32
+                        (10.0_f64.powf(self.target_db / 10.0) / x).sqrt() as f32
                     })
                     .collect::<Vec<f32>>()
             }
@@ -82,7 +82,7 @@ impl Settings {
                 let analyzer = Rms::new(self.channel_independent);
                 let rms = analyzer.analyze(&mut input)?;
                 rms.iter()
-                    .map(|x| (10.0_f64.powf(self.target / 20.0) / x) as f32)
+                    .map(|x| (10.0_f64.powf(self.target_db / 20.0) / x) as f32)
                     .collect::<Vec<f32>>()
             }
         };
