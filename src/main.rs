@@ -17,18 +17,30 @@
 \******************************************************************************/
 #![forbid(unsafe_code)]
 
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use hound::{WavReader, WavWriter};
+
+mod analyzer;
+mod operations;
 
 #[derive(Debug, Parser)]
 #[command(name = "audio-effects")]
 struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+
     /// Input wav filename
     #[arg(short)]
     input_filename: String,
     /// Output wav filename
     #[arg(short)]
     output_filename: String,
+}
+
+#[derive(Debug, Subcommand)]
+enum Commands {
+    /// Normalize audio loudness
+    Normalize(operations::normalize::Settings),
 }
 
 fn main() {
