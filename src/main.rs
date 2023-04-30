@@ -25,8 +25,6 @@ mod biquad;
 mod frame;
 mod operations;
 
-use frame::FrameIterator;
-
 #[derive(Debug, Parser)]
 #[command(name = "audio-effects")]
 struct Cli {
@@ -38,19 +36,21 @@ struct Cli {
     input_filename: String,
     /// Output wav filename
     #[arg(short)]
-    output_filename: String,
+    output_filename: Option<String>,
 }
 
 #[derive(Debug, Subcommand)]
 enum Commands {
     /// Normalize audio loudness
     Normalize(operations::normalize::Settings),
+    /// Analyze audio loudness
+    Loudness(analyzer::loudness::Settings),
 }
 
 fn main() {
     let cli = Cli::parse();
 
-    let mut input = WavReader::open(&cli.input_filename).unwrap();
+    let input = WavReader::open(&cli.input_filename).unwrap();
     let spec = input.spec();
     let duration = input.duration();
     eprintln!(
@@ -58,19 +58,17 @@ fn main() {
         spec.channels, spec.sample_rate, duration,
     );
 
-    let mut output = WavWriter::create(cli.output_filename, spec).unwrap();
-    let mut progress = 0;
-
-    let mut frames = FrameIterator::new(input.samples::<f32>(), spec.channels);
-    while let Some(x) = frames.next() {
-        progress += 1;
-        if progress % 100000 == 0 {
-            eprint!("\rProcessing sample: {}/{}", progress, duration);
-        }
-        for i in x.unwrap() {
-            output.write_sample(*i).unwrap();
-        }
-    }
-    output.finalize().unwrap();
-    eprintln!("\rDone!");
+    match cli.command {
+        Commands::Loudness(x) => match x.analyze(input) {
+            Ok(loudness) => println!(
+                "\nInput has integrative loudness of {:?} LUFS",
+                loudness
+                    .iter()
+                    .map(|x| 10.0 * x.log10())
+                    .collect::<Vec<f64>>(),
+            ),
+            Err(e) => println!("\nLoudness analysis failed: {}", e.to_string()),
+        },
+        _ => eprintln!("Not implemented yet!"),
+    };
 }

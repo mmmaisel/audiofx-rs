@@ -35,6 +35,7 @@ pub struct Settings {
     #[arg(short)]
     channel_independent: bool,
     /// Normalize result to stereo (recommended),
+    /// This is the recommended, but not EBU R128 compliant, setting.
     #[arg(short, action=clap::ArgAction::SetFalse)]
     normalize: bool,
 }
