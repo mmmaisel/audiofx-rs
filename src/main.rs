@@ -21,6 +21,7 @@ use clap::{Parser, Subcommand};
 use hound::{WavReader, WavWriter};
 
 mod analyzer;
+mod biquad;
 mod frame;
 mod operations;
 
