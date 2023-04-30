@@ -21,7 +21,10 @@ use clap::{Parser, Subcommand};
 use hound::{WavReader, WavWriter};
 
 mod analyzer;
+mod frame;
 mod operations;
+
+use frame::FrameIterator;
 
 #[derive(Debug, Parser)]
 #[command(name = "audio-effects")]
@@ -51,26 +54,22 @@ fn main() {
     let duration = input.duration();
     eprintln!(
         "channels: {}, sample_rate: {}, length: {}",
-        spec.channels,
-        spec.sample_rate,
-        (duration as usize) / (spec.channels as usize),
+        spec.channels, spec.sample_rate, duration,
     );
 
     let mut output = WavWriter::create(cli.output_filename, spec).unwrap();
-    let mut channel = 0;
-    let mut values = vec![0.0; spec.channels.into()];
+    let mut progress = 0;
 
-    for i in input.samples() {
-        values[channel] = i.unwrap();
-        channel += 1;
-        if channel == spec.channels.into() {
-            channel = 0;
-            // XXX: process data here
-            for i in &values {
-                output.write_sample(*i).unwrap();
-            }
+    let mut frames = FrameIterator::new(input.samples::<f32>(), spec.channels);
+    while let Some(x) = frames.next() {
+        progress += 1;
+        if progress % 100000 == 0 {
+            eprint!("\rProcessing sample: {}/{}", progress, duration);
+        }
+        for i in x.unwrap() {
+            output.write_sample(*i).unwrap();
         }
     }
-
     output.finalize().unwrap();
+    eprintln!("\rDone!");
 }
