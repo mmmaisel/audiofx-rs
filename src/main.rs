@@ -23,6 +23,7 @@ use hound::{WavReader, WavWriter};
 mod analyzer;
 mod biquad;
 mod error;
+mod fir;
 mod frame;
 mod operations;
 mod progress;
@@ -45,6 +46,8 @@ struct Cli {
 enum Commands {
     /// Normalize audio loudness
     Normalize(operations::normalize::Settings),
+    /// Analyze audio true peak
+    TruePeak(analyzer::true_peak::Settings),
     /// Analyze audio loudness
     Loudness(analyzer::loudness::Settings),
     /// Analyze audio RMS
@@ -75,6 +78,10 @@ fn main() {
                 println!("\nNormalizing failed: {}", e.to_string());
             }
         }
+        Commands::TruePeak(x) => match x.analyze(&mut input) {
+            Ok(true_peak) => println!("Input has true peak at {:?}", true_peak),
+            Err(e) => println!("True peak analyses failed: {}", e.to_string()),
+        },
         Commands::Loudness(x) => match x.analyze(&mut input) {
             Ok(loudness) => println!(
                 "Input has integrative loudness of {:?} LUFS",
