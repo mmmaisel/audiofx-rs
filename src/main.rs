@@ -22,6 +22,7 @@ use hound::{WavReader, WavWriter};
 
 mod analyzer;
 mod biquad;
+mod error;
 mod frame;
 mod operations;
 mod progress;
@@ -53,7 +54,7 @@ enum Commands {
 fn main() {
     let cli = Cli::parse();
 
-    let input = WavReader::open(&cli.input_filename).unwrap();
+    let mut input = WavReader::open(&cli.input_filename).unwrap();
     let spec = input.spec();
     let duration = input.duration();
     eprintln!(
@@ -62,7 +63,19 @@ fn main() {
     );
 
     match cli.command {
-        Commands::Loudness(x) => match x.analyze(input) {
+        Commands::Normalize(x) => {
+            let output = match &cli.output_filename {
+                Some(filename) => WavWriter::create(&filename, spec).unwrap(),
+                None => {
+                    println!("No output filename was given!");
+                    return;
+                }
+            };
+            if let Err(e) = x.normalize(input, output) {
+                println!("\nNormalizing failed: {}", e.to_string());
+            }
+        }
+        Commands::Loudness(x) => match x.analyze(&mut input) {
             Ok(loudness) => println!(
                 "Input has integrative loudness of {:?} LUFS",
                 loudness
@@ -72,13 +85,12 @@ fn main() {
             ),
             Err(e) => println!("Loudness analysis failed: {}", e.to_string()),
         },
-        Commands::Rms(x) => match x.analyze(input) {
+        Commands::Rms(x) => match x.analyze(&mut input) {
             Ok(rms) => println!(
                 "Input has RMS of {:?} dB",
                 rms.iter().map(|x| 20.0 * x.log10()).collect::<Vec<f64>>()
             ),
             Err(e) => println!("RMS analysis failed: {}", e.to_string()),
         },
-        _ => eprintln!("Not implemented yet!"),
     };
 }

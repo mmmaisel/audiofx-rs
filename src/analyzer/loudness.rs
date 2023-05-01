@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
-use super::Error;
 use crate::biquad::Biquad;
+use crate::error::Error;
 use crate::frame::FrameIterator;
 use crate::progress::Progress;
 use hound::WavReader;
@@ -35,7 +35,17 @@ pub struct Settings {
 }
 
 impl Settings {
-    pub fn analyze<R>(&self, mut input: WavReader<R>) -> Result<Vec<f64>, Error>
+    pub fn new(channel_independent: bool, strict_ebur128: bool) -> Self {
+        Self {
+            channel_independent,
+            strict_ebur128,
+        }
+    }
+
+    pub fn analyze<R>(
+        &self,
+        input: &mut WavReader<R>,
+    ) -> Result<Vec<f64>, Error>
     where
         R: std::io::Read,
     {
