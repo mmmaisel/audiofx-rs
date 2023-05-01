@@ -45,6 +45,8 @@ enum Commands {
     Normalize(operations::normalize::Settings),
     /// Analyze audio loudness
     Loudness(analyzer::loudness::Settings),
+    /// Analyze audio RMS
+    Rms(analyzer::rms::Settings),
 }
 
 fn main() {
@@ -68,6 +70,13 @@ fn main() {
                     .collect::<Vec<f64>>(),
             ),
             Err(e) => println!("\nLoudness analysis failed: {}", e.to_string()),
+        },
+        Commands::Rms(x) => match x.analyze(input) {
+            Ok(rms) => println!(
+                "\nInput has RMS of {:?} dB",
+                rms.iter().map(|x| 20.0 * x.log10()).collect::<Vec<f64>>()
+            ),
+            Err(e) => println!("\nRMS analysis failed: {}", e.to_string()),
         },
         _ => eprintln!("Not implemented yet!"),
     };

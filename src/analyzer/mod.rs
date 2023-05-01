@@ -16,3 +16,33 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
 pub mod loudness;
+pub mod rms;
+
+pub enum Error {
+    Denormalized,
+    InvalidFrame,
+    Hound(hound::Error),
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Denormalized => write!(
+                f,
+                "Block value exceeds full-scale. Consider normalizing input."
+            ),
+            Self::InvalidFrame => {
+                write!(f, "Frame is invalid amount of samples.")
+            }
+            Self::Hound(e) => {
+                write!(f, "{}", e.to_string())
+            }
+        }
+    }
+}
+
+impl From<hound::Error> for Error {
+    fn from(e: hound::Error) -> Self {
+        Self::Hound(e)
+    }
+}
