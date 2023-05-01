@@ -24,6 +24,7 @@ mod analyzer;
 mod biquad;
 mod frame;
 mod operations;
+mod progress;
 
 #[derive(Debug, Parser)]
 #[command(name = "audio-effects")]
@@ -63,20 +64,20 @@ fn main() {
     match cli.command {
         Commands::Loudness(x) => match x.analyze(input) {
             Ok(loudness) => println!(
-                "\nInput has integrative loudness of {:?} LUFS",
+                "Input has integrative loudness of {:?} LUFS",
                 loudness
                     .iter()
                     .map(|x| 10.0 * x.log10())
                     .collect::<Vec<f64>>(),
             ),
-            Err(e) => println!("\nLoudness analysis failed: {}", e.to_string()),
+            Err(e) => println!("Loudness analysis failed: {}", e.to_string()),
         },
         Commands::Rms(x) => match x.analyze(input) {
             Ok(rms) => println!(
-                "\nInput has RMS of {:?} dB",
+                "Input has RMS of {:?} dB",
                 rms.iter().map(|x| 20.0 * x.log10()).collect::<Vec<f64>>()
             ),
-            Err(e) => println!("\nRMS analysis failed: {}", e.to_string()),
+            Err(e) => println!("RMS analysis failed: {}", e.to_string()),
         },
         _ => eprintln!("Not implemented yet!"),
     };

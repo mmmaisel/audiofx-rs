@@ -18,6 +18,7 @@
 use super::Error;
 use crate::biquad::Biquad;
 use crate::frame::FrameIterator;
+use crate::progress::Progress;
 use hound::WavReader;
 use std::collections::VecDeque;
 
@@ -52,14 +53,11 @@ impl Settings {
             )]
         };
 
-        let mut progress = 0;
+        let mut progress = Progress::new(duration as usize, "Analyzing sample");
         let mut frames =
             FrameIterator::new(input.samples::<f32>(), spec.channels);
         while let Some(frame) = frames.next() {
-            progress += 1;
-            if progress % 100000 == 0 {
-                eprint!("\rProcessing sample: {}/{}", progress, duration);
-            }
+            progress.next();
             match frame {
                 Ok(frame) => {
                     if self.channel_independent {
