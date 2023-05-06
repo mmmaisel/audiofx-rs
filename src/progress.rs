@@ -46,6 +46,6 @@ impl Progress {
 
 impl Drop for Progress {
     fn drop(&mut self) {
-        eprintln!("");
+        eprintln!();
     }
 }

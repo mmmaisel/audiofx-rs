@@ -21,7 +21,7 @@ pub enum ChannelMap {
     Left,
     Right,
     Center,
-    LFE,
+    Lfe,
     RearLeft,
     RearRight,
     SideLeft,

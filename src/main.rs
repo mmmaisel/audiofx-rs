@@ -69,7 +69,7 @@ fn main() {
     match cli.command {
         Commands::Normalize(x) => {
             let output = match &cli.output_filename {
-                Some(filename) => WavWriter::create(&filename, spec).unwrap(),
+                Some(filename) => WavWriter::create(filename, spec).unwrap(),
                 None => {
                     println!("No output filename was given!");
                     return;
