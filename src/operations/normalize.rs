@@ -15,7 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
-use crate::analyzer::{loudness::Settings as Lufs, rms::Settings as Rms};
+use crate::analyzer::{
+    loudness::Settings as Lufs, rms::Settings as Rms,
+    true_peak::Settings as TruePeak,
+};
 use crate::error::Error;
 use crate::frame::FrameIterator;
 use crate::progress::Progress;
@@ -23,8 +26,8 @@ use hound::{WavReader, WavWriter};
 
 #[derive(Clone, Debug, clap::ValueEnum)]
 pub enum Mode {
-    /// Analyze peak amplitude
-    Amplitude,
+    /// Analyze true peak amplitude
+    TruePeak,
     /// Analyze LUFS loudness
     Lufs,
     /// Analyze RMS loudness
@@ -61,7 +64,13 @@ impl Settings {
         let duration = input.duration();
 
         let gain = match &self.mode {
-            Mode::Amplitude => panic!("Not implemented yet!"),
+            Mode::TruePeak => {
+                let analyzer = TruePeak::new(self.channel_independent);
+                let peak = analyzer.analyze(&mut input)?;
+                peak.iter()
+                    .map(|x| (10.0_f64.powf(self.target / 20.0) / x) as f32)
+                    .collect::<Vec<f32>>()
+            }
             Mode::Lufs => {
                 let analyzer =
                     Lufs::new(self.channel_independent, self.strict_ebur128);
