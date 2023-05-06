@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
 use crate::biquad::Biquad;
+use crate::conversion::Conversion;
 use crate::error::Error;
 use crate::frame::FrameIterator;
 use crate::progress::Progress;
@@ -64,8 +65,7 @@ impl Settings {
         };
 
         let mut progress = Progress::new(duration as usize, "Analyzing sample");
-        let mut frames =
-            FrameIterator::new(input.samples::<f32>(), spec.channels);
+        let mut frames = FrameIterator::new(input.samples_f32(), spec.channels);
         while let Some(frame) = frames.next() {
             progress.next();
             match frame {

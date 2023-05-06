@@ -22,6 +22,7 @@ use hound::{WavReader, WavWriter};
 
 mod analyzer;
 mod biquad;
+mod conversion;
 mod error;
 mod fir;
 mod frame;

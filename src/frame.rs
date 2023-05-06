@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
-use hound::{Error, Sample, WavSamples};
+use hound::{Error, Sample};
 
 pub enum ChannelMap {
     Left,
@@ -28,18 +28,18 @@ pub enum ChannelMap {
     SideRight,
 }
 
-pub struct FrameIterator<'a, R, S> {
-    samples: WavSamples<'a, R, S>,
+pub struct FrameIterator<S, T> {
+    samples: T,
     channels: u16,
     buffer: Vec<S>,
 }
 
-impl<'a, R, S> FrameIterator<'a, R, S>
+impl<S, T> FrameIterator<S, T>
 where
-    R: std::io::Read,
     S: Sample,
+    T: Iterator<Item = Result<S, Error>>,
 {
-    pub fn new(samples: WavSamples<'a, R, S>, channels: u16) -> Self {
+    pub fn new(samples: T, channels: u16) -> Self {
         Self {
             samples,
             channels,

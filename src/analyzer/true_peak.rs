@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
+use crate::conversion::Conversion;
 use crate::error::Error;
 use crate::fir::Fir;
 use crate::frame::FrameIterator;
@@ -51,8 +52,7 @@ impl Settings {
         };
 
         let mut progress = Progress::new(duration as usize, "Analyzing sample");
-        let mut frames =
-            FrameIterator::new(input.samples::<f32>(), spec.channels);
+        let mut frames = FrameIterator::new(input.samples_f32(), spec.channels);
         while let Some(frame) = frames.next() {
             progress.next();
             match frame {

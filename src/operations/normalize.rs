@@ -19,6 +19,7 @@ use crate::analyzer::{
     loudness::Settings as Lufs, rms::Settings as Rms,
     true_peak::Settings as TruePeak,
 };
+use crate::conversion::Conversion;
 use crate::error::Error;
 use crate::frame::FrameIterator;
 use crate::progress::Progress;
@@ -92,8 +93,7 @@ impl Settings {
         };
 
         input.seek(0)?;
-        let mut frames =
-            FrameIterator::new(input.samples::<f32>(), spec.channels);
+        let mut frames = FrameIterator::new(input.samples_f32(), spec.channels);
         let mut progress =
             Progress::new(duration as usize, "Processing sample");
         while let Some(frame) = frames.next() {
