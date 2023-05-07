@@ -17,7 +17,7 @@
 \******************************************************************************/
 use crate::conversion::Conversion;
 use crate::error::Error;
-use crate::fir::Fir;
+use crate::filters::fir::Fir;
 use crate::frame::FrameIterator;
 use crate::progress::Progress;
 use hound::WavReader;

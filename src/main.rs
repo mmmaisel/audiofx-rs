@@ -21,10 +21,9 @@ use clap::{Parser, Subcommand};
 use hound::{WavReader, WavWriter};
 
 mod analyzer;
-mod biquad;
 mod conversion;
 mod error;
-mod fir;
+mod filters;
 mod frame;
 mod operations;
 mod progress;

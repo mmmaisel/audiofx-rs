@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
-use crate::biquad::Biquad;
+use crate::filters::biquad::Biquad;
 use crate::conversion::Conversion;
 use crate::error::Error;
 use crate::frame::FrameIterator;
