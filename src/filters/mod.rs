@@ -18,3 +18,4 @@
 pub mod biquad;
 pub mod fir;
 pub mod lag1;
+pub mod mov_rms;
