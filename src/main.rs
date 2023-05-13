@@ -22,6 +22,7 @@ use hound::{WavReader, WavWriter};
 
 mod analyzer;
 mod conversion;
+mod effects;
 mod error;
 mod filters;
 mod frame;
@@ -44,6 +45,8 @@ struct Cli {
 
 #[derive(Debug, Subcommand)]
 enum Commands {
+    /// Amplifier
+    Amplify(effects::amplify::Settings),
     /// Normalize audio loudness
     Normalize(operations::normalize::Settings),
     /// Analyze audio true peak
@@ -66,16 +69,34 @@ fn main() {
     );
 
     match cli.command {
-        Commands::Normalize(x) => {
-            let output = match &cli.output_filename {
+        Commands::Amplify(x) => {
+            let mut output = match &cli.output_filename {
                 Some(filename) => WavWriter::create(filename, spec).unwrap(),
                 None => {
                     println!("No output filename was given!");
                     return;
                 }
             };
-            if let Err(e) = x.normalize(input, output) {
+            if let Err(e) = x.amplify(&mut input, &mut output) {
+                println!("\nAmplifying failed: {}", e.to_string());
+            }
+            if let Err(e) = output.finalize() {
+                println!("Finalizing wav file failed: {}", e.to_string());
+            }
+        }
+        Commands::Normalize(x) => {
+            let mut output = match &cli.output_filename {
+                Some(filename) => WavWriter::create(filename, spec).unwrap(),
+                None => {
+                    println!("No output filename was given!");
+                    return;
+                }
+            };
+            if let Err(e) = x.normalize(&mut input, &mut output) {
                 println!("\nNormalizing failed: {}", e.to_string());
+            }
+            if let Err(e) = output.finalize() {
+                println!("Finalizing wav file failed: {}", e.to_string());
             }
         }
         Commands::TruePeak(x) => match x.analyze(&mut input) {

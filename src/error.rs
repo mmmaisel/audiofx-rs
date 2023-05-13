@@ -18,6 +18,7 @@
 pub enum Error {
     Denormalized,
     InvalidFrame,
+    InvalidArgument(String),
     Io(std::io::Error),
     Hound(hound::Error),
 }
@@ -31,6 +32,9 @@ impl std::fmt::Display for Error {
             ),
             Self::InvalidFrame => {
                 write!(f, "Frame is invalid amount of samples.")
+            }
+            Self::InvalidArgument(e) => {
+                write!(f, "Invalid argument: {}", e)
             }
             Self::Io(e) => {
                 write!(f, "IO Error: {}", e.to_string())

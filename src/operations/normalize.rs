@@ -19,10 +19,8 @@ use crate::analyzer::{
     loudness::Settings as Lufs, rms::Settings as Rms,
     true_peak::Settings as TruePeak,
 };
-use crate::conversion::Conversion;
+use crate::effects::amplify::Settings as Amplify;
 use crate::error::Error;
-use crate::frame::FrameIterator;
-use crate::progress::Progress;
 use hound::{WavReader, WavWriter};
 
 #[derive(Clone, Debug, clap::ValueEnum)]
@@ -54,16 +52,13 @@ pub struct Settings {
 impl Settings {
     pub fn normalize<R, W>(
         &self,
-        mut input: WavReader<R>,
-        mut output: WavWriter<W>,
+        mut input: &mut WavReader<R>,
+        mut output: &mut WavWriter<W>,
     ) -> Result<(), Error>
     where
         R: std::io::Read + std::io::Seek,
         W: std::io::Write + std::io::Seek,
     {
-        let spec = input.spec();
-        let duration = input.duration();
-
         let gain = match &self.mode {
             Mode::TruePeak => {
                 let analyzer = TruePeak::new(self.channel_independent);
@@ -93,26 +88,9 @@ impl Settings {
         };
 
         input.seek(0)?;
-        let mut frames = FrameIterator::new(input.samples_f32(), spec.channels);
-        let mut progress =
-            Progress::new(duration as usize, "Processing sample");
-        while let Some(frame) = frames.next() {
-            progress.next();
-            match frame {
-                Ok(frame) => {
-                    for (i, sample) in frame.iter().enumerate() {
-                        let val = if self.channel_independent {
-                            sample * gain[i]
-                        } else {
-                            sample * gain[0]
-                        };
-                        output.write_sample(val)?;
-                    }
-                }
-                Err(e) => return Err(e.into()),
-            }
-        }
-        output.finalize()?;
+        let amplify =
+            Amplify::new(gain.iter().map(|x| 20.0 * x.log10()).collect());
+        amplify.amplify(&mut input, &mut output)?;
 
         Ok(())
     }
