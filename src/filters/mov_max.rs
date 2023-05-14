@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
+use super::Filter;
 use std::collections::VecDeque;
 
 /// Moving maximum filter
@@ -36,8 +37,10 @@ impl MovMax {
             maxes: VecDeque::with_capacity(window_length),
         }
     }
+}
 
-    pub fn process(&mut self, input: f64) -> f64 {
+impl Filter for MovMax {
+    fn process(&mut self, input: f64) -> f64 {
         while self.maxes.back().map_or(false, |x| x < &input) {
             self.maxes.pop_back();
         }

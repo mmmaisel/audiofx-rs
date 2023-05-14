@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
+use super::Filter;
 use std::collections::VecDeque;
 
 /// Moving RMS filter
@@ -43,7 +44,14 @@ impl MovRms {
         }
     }
 
-    pub fn process(&mut self, input: f64) -> f64 {
+    fn refresh(&mut self) {
+        self.acc = self.buffer.iter().sum();
+        self.counter = 0;
+    }
+}
+
+impl Filter for MovRms {
+    fn process(&mut self, input: f64) -> f64 {
         let sq_input = input * input;
         let old_input = self.buffer.pop_front().unwrap_or(0.0);
         self.buffer.push_back(sq_input);
@@ -64,11 +72,6 @@ impl MovRms {
         }
 
         self.gain * (self.acc / (self.buffer.len() as f64)).sqrt()
-    }
-
-    fn refresh(&mut self) {
-        self.acc = self.buffer.iter().sum();
-        self.counter = 0;
     }
 }
 

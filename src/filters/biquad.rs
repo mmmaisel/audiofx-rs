@@ -15,6 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
+use super::Filter;
+
 #[derive(Clone, Debug)]
 pub struct Biquad {
     /// Numerator coefficients B0, B1, B2
@@ -36,8 +38,10 @@ impl Biquad {
             output: [0.0; 2],
         }
     }
+}
 
-    pub fn process(&mut self, input: f64) -> f64 {
+impl Filter for Biquad {
+    fn process(&mut self, input: f64) -> f64 {
         // Biquad must use double for all calculations.
         // Otherwise, some filters may have catastrophic rounding errors.
         let output = self.b[0] * input

@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
+use super::Filter;
 use std::collections::VecDeque;
 
 #[derive(Clone, Debug)]
@@ -49,8 +50,10 @@ impl Fir {
             buf: VecDeque::from(vec![0.0; n as usize + 1]),
         }
     }
+}
 
-    pub fn process(&mut self, input: f64) -> f64 {
+impl Filter for Fir {
+    fn process(&mut self, input: f64) -> f64 {
         self.buf.push_back(input);
         if self.buf.len() > self.b.len() {
             self.buf.pop_front();

@@ -15,6 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
+use super::Filter;
+
 /// 1st order lag filter
 #[derive(Clone, Debug)]
 pub struct Lag1 {
@@ -42,15 +44,6 @@ impl Lag1 {
         }
     }
 
-    pub fn process(&mut self, input: f64) -> f64 {
-        if input >= self.level {
-            self.level += self.rise_factor * (input - self.level);
-        } else {
-            self.level += self.fall_factor * (input - self.level);
-        }
-        self.level * self.gain
-    }
-
     /// Calculate compensation value for filter initial condition.
     pub fn process_initial(&mut self, input: f64, gain: f64) -> f64 {
         if input >= self.level {
@@ -64,5 +57,16 @@ impl Lag1 {
     /// Reset filter level to given value.
     pub fn reset(&mut self, level: f64) {
         self.level = level;
+    }
+}
+
+impl Filter for Lag1 {
+    fn process(&mut self, input: f64) -> f64 {
+        if input >= self.level {
+            self.level += self.rise_factor * (input - self.level);
+        } else {
+            self.level += self.fall_factor * (input - self.level);
+        }
+        self.level * self.gain
     }
 }

@@ -20,3 +20,7 @@ pub mod fir;
 pub mod lag1;
 pub mod mov_max;
 pub mod mov_rms;
+
+pub trait Filter {
+    fn process(&mut self, input: f64) -> f64;
+}
