@@ -11,3 +11,5 @@ rust-version = "1.59.0"
 clap = { version=">=3.1.5", features=["derive"] }
 hound = ">=3.5.0"
 kahan = "0.1.4"
+
+gtk4 = { version=">=0.6.6", features=["v4_10"] }

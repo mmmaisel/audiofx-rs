@@ -26,6 +26,7 @@ mod effects;
 mod error;
 mod filters;
 mod frame;
+mod gui;
 mod operations;
 mod progress;
 
@@ -33,11 +34,11 @@ mod progress;
 #[command(name = "audio-effects")]
 struct Cli {
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 
     /// Input wav filename
     #[arg(short)]
-    input_filename: String,
+    input_filename: Option<String>,
     /// Output wav filename
     #[arg(short)]
     output_filename: Option<String>,
@@ -59,10 +60,10 @@ enum Commands {
     Rms(analyzer::rms::Settings),
 }
 
-fn main() {
-    let cli = Cli::parse();
-
-    let mut input = WavReader::open(&cli.input_filename).unwrap();
+fn open_input(
+    input_filename: Option<String>,
+) -> WavReader<std::io::BufReader<std::fs::File>> {
+    let input = WavReader::open(input_filename.unwrap()).unwrap();
     let spec = input.spec();
     let duration = input.duration();
     eprintln!(
@@ -70,72 +71,106 @@ fn main() {
         spec.channels, spec.sample_rate, duration,
     );
 
+    input
+}
+
+fn main() {
+    let cli = Cli::parse();
+
     match cli.command {
-        Commands::Amplify(x) => {
-            let mut output = match &cli.output_filename {
-                Some(filename) => WavWriter::create(filename, spec).unwrap(),
-                None => {
-                    println!("No output filename was given!");
-                    return;
+        None => gui::run(),
+        Some(x) => match x {
+            Commands::Amplify(x) => {
+                let mut input = open_input(cli.input_filename);
+                let mut output = match &cli.output_filename {
+                    Some(filename) => {
+                        WavWriter::create(filename, input.spec()).unwrap()
+                    }
+                    None => {
+                        println!("No output filename was given!");
+                        return;
+                    }
+                };
+                if let Err(e) = x.amplify(&mut input, &mut output) {
+                    println!("\nAmplifying failed: {}", e.to_string());
                 }
-            };
-            if let Err(e) = x.amplify(&mut input, &mut output) {
-                println!("\nAmplifying failed: {}", e.to_string());
-            }
-            if let Err(e) = output.finalize() {
-                println!("Finalizing wav file failed: {}", e.to_string());
-            }
-        }
-        Commands::Compressor(x) => {
-            let mut output = match &cli.output_filename {
-                Some(filename) => WavWriter::create(filename, spec).unwrap(),
-                None => {
-                    println!("No output filename was given!");
-                    return;
+                if let Err(e) = output.finalize() {
+                    println!("Finalizing wav file failed: {}", e.to_string());
                 }
-            };
-            if let Err(e) = x.compress(&mut input, &mut output) {
-                println!("\nCompressing failed: {}", e.to_string());
             }
-            if let Err(e) = output.finalize() {
-                println!("Finalizing wav file failed: {}", e.to_string());
-            }
-        }
-        Commands::Normalize(x) => {
-            let mut output = match &cli.output_filename {
-                Some(filename) => WavWriter::create(filename, spec).unwrap(),
-                None => {
-                    println!("No output filename was given!");
-                    return;
+            Commands::Compressor(x) => {
+                let mut input = open_input(cli.input_filename);
+                let mut output = match &cli.output_filename {
+                    Some(filename) => {
+                        WavWriter::create(filename, input.spec()).unwrap()
+                    }
+                    None => {
+                        println!("No output filename was given!");
+                        return;
+                    }
+                };
+                if let Err(e) = x.compress(&mut input, &mut output) {
+                    println!("\nCompressing failed: {}", e.to_string());
                 }
-            };
-            if let Err(e) = x.normalize(&mut input, &mut output) {
-                println!("\nNormalizing failed: {}", e.to_string());
+                if let Err(e) = output.finalize() {
+                    println!("Finalizing wav file failed: {}", e.to_string());
+                }
             }
-            if let Err(e) = output.finalize() {
-                println!("Finalizing wav file failed: {}", e.to_string());
+            Commands::Normalize(x) => {
+                let mut input = open_input(cli.input_filename);
+                let mut output = match &cli.output_filename {
+                    Some(filename) => {
+                        WavWriter::create(filename, input.spec()).unwrap()
+                    }
+                    None => {
+                        println!("No output filename was given!");
+                        return;
+                    }
+                };
+                if let Err(e) = x.normalize(&mut input, &mut output) {
+                    println!("\nNormalizing failed: {}", e.to_string());
+                }
+                if let Err(e) = output.finalize() {
+                    println!("Finalizing wav file failed: {}", e.to_string());
+                }
             }
-        }
-        Commands::TruePeak(x) => match x.analyze(&mut input) {
-            Ok(true_peak) => println!("Input has true peak at {:?}", true_peak),
-            Err(e) => println!("True peak analyses failed: {}", e.to_string()),
-        },
-        Commands::Loudness(x) => match x.analyze(&mut input) {
-            Ok(loudness) => println!(
-                "Input has integrative loudness of {:?} LUFS",
-                loudness
-                    .iter()
-                    .map(|x| 10.0 * x.log10())
-                    .collect::<Vec<f64>>(),
-            ),
-            Err(e) => println!("Loudness analysis failed: {}", e.to_string()),
-        },
-        Commands::Rms(x) => match x.analyze(&mut input) {
-            Ok(rms) => println!(
-                "Input has RMS of {:?} dB",
-                rms.iter().map(|x| 20.0 * x.log10()).collect::<Vec<f64>>()
-            ),
-            Err(e) => println!("RMS analysis failed: {}", e.to_string()),
+            Commands::TruePeak(x) => {
+                match x.analyze(&mut open_input(cli.input_filename)) {
+                    Ok(true_peak) => {
+                        println!("Input has true peak at {:?}", true_peak)
+                    }
+                    Err(e) => {
+                        println!("True peak analyses failed: {}", e.to_string())
+                    }
+                }
+            }
+            Commands::Loudness(x) => {
+                match x.analyze(&mut open_input(cli.input_filename)) {
+                    Ok(loudness) => println!(
+                        "Input has integrative loudness of {:?} LUFS",
+                        loudness
+                            .iter()
+                            .map(|x| 10.0 * x.log10())
+                            .collect::<Vec<f64>>(),
+                    ),
+                    Err(e) => {
+                        println!("Loudness analysis failed: {}", e.to_string())
+                    }
+                }
+            }
+            Commands::Rms(x) => {
+                match x.analyze(&mut open_input(cli.input_filename)) {
+                    Ok(rms) => println!(
+                        "Input has RMS of {:?} dB",
+                        rms.iter()
+                            .map(|x| 20.0 * x.log10())
+                            .collect::<Vec<f64>>()
+                    ),
+                    Err(e) => {
+                        println!("RMS analysis failed: {}", e.to_string())
+                    }
+                }
+            }
         },
     };
 }
