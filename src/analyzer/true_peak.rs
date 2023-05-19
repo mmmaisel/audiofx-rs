@@ -1,5 +1,5 @@
 /******************************************************************************\
-    audiofx-rs
+    wavehacker
     Copyright (C) 2023 Max Maisel
 
     This program is free software: you can redistribute it and/or modify

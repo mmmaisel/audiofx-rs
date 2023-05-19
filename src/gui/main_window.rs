@@ -1,5 +1,5 @@
 /******************************************************************************\
-    audiofx-rs
+    wavehacker
     Copyright (C) 2023 Max Maisel
 
     This program is free software: you can redistribute it and/or modify
@@ -18,26 +18,26 @@
 use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;
 
-use super::{widgets::ImageButton, AudiofxApplication};
+use super::{widgets::ImageButton, WavehackerApplication};
 use gtk4::glib::{self, Object, Sender};
 use gtk4::{gio, ApplicationWindow, FileDialog, HeaderBar, Widget, Window};
 
 use std::cell::RefCell;
 
 #[derive(Default)]
-pub struct AudiofxWindowImpl {
+pub struct WavehackerWindowImpl {
     open_button: RefCell<ImageButton>,
     save_button: RefCell<ImageButton>,
 }
 
 #[glib::object_subclass]
-impl ObjectSubclass for AudiofxWindowImpl {
-    const NAME: &'static str = "AudiofxWindow";
-    type Type = AudiofxWindow;
+impl ObjectSubclass for WavehackerWindowImpl {
+    const NAME: &'static str = "WavehackerWindow";
+    type Type = WavehackerWindow;
     type ParentType = ApplicationWindow;
 }
 
-impl ObjectImpl for AudiofxWindowImpl {
+impl ObjectImpl for WavehackerWindowImpl {
     fn constructed(&self) {
         self.parent_constructed();
 
@@ -55,23 +55,23 @@ impl ObjectImpl for AudiofxWindowImpl {
         self.obj().set_titlebar(Some(&header_bar));
     }
 }
-impl WidgetImpl for AudiofxWindowImpl {}
-impl WindowImpl for AudiofxWindowImpl {}
-impl ApplicationWindowImpl for AudiofxWindowImpl {}
+impl WidgetImpl for WavehackerWindowImpl {}
+impl WindowImpl for WavehackerWindowImpl {}
+impl ApplicationWindowImpl for WavehackerWindowImpl {}
 
 glib::wrapper! {
-    pub struct AudiofxWindow(ObjectSubclass<AudiofxWindowImpl>)
+    pub struct WavehackerWindow(ObjectSubclass<WavehackerWindowImpl>)
         @extends Widget, Window, ApplicationWindow,
         @implements gio::ActionMap, gio::ActionGroup;
 }
 
-impl AudiofxWindow {
-    pub fn new(app: &AudiofxApplication) -> Self {
+impl WavehackerWindow {
+    pub fn new(app: &WavehackerApplication) -> Self {
         Object::builder().property("application", app).build()
     }
 
     pub fn setup_events(&self, tx: Sender<super::GuiEvent>) {
-        let window = AudiofxWindowImpl::from_obj(self);
+        let window = WavehackerWindowImpl::from_obj(self);
 
         let open_tx = tx.clone();
         window.open_button.borrow_mut().clone().connect_clicked(

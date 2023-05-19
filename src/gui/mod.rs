@@ -1,5 +1,5 @@
 /******************************************************************************\
-    audiofx-rs
+    wavehacker
     Copyright (C) 2023 Max Maisel
 
     This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@ use gtk4::subclass::prelude::*;
 use gtk4::glib::{self, MainContext, Object, WeakRef, PRIORITY_DEFAULT};
 use gtk4::{gio, Application};
 
-use main_window::AudiofxWindow;
+use main_window::WavehackerWindow;
 use std::{cell::RefCell, rc::Rc};
 
 pub enum GuiEvent {
@@ -38,26 +38,26 @@ pub struct ApplicationContext {
 }
 
 #[derive(Default)]
-pub struct AudiofxApplicationImpl {
-    window: RefCell<Option<WeakRef<AudiofxWindow>>>,
+pub struct WavehackerApplicationImpl {
+    window: RefCell<Option<WeakRef<WavehackerWindow>>>,
     context: Rc<RefCell<ApplicationContext>>,
 }
 
 #[glib::object_subclass]
-impl ObjectSubclass for AudiofxApplicationImpl {
-    const NAME: &'static str = "AudiofxApplication";
-    type Type = AudiofxApplication;
+impl ObjectSubclass for WavehackerApplicationImpl {
+    const NAME: &'static str = "WavehackerApplication";
+    type Type = WavehackerApplication;
     type ParentType = Application;
 }
 
-impl ObjectImpl for AudiofxApplicationImpl {}
+impl ObjectImpl for WavehackerApplicationImpl {}
 
-impl ApplicationImpl for AudiofxApplicationImpl {
+impl ApplicationImpl for WavehackerApplicationImpl {
     fn activate(&self) {
         self.parent_activate();
 
         let (tx, rx) = MainContext::channel(PRIORITY_DEFAULT);
-        let window = AudiofxWindow::new(&self.obj());
+        let window = WavehackerWindow::new(&self.obj());
 
         window.setup_events(tx);
         self.window.replace(Some(window.downgrade()));
@@ -80,22 +80,22 @@ impl ApplicationImpl for AudiofxApplicationImpl {
     }
 }
 
-impl GtkApplicationImpl for AudiofxApplicationImpl {}
+impl GtkApplicationImpl for WavehackerApplicationImpl {}
 
 glib::wrapper! {
-    pub struct AudiofxApplication(ObjectSubclass<AudiofxApplicationImpl>)
+    pub struct WavehackerApplication(ObjectSubclass<WavehackerApplicationImpl>)
         @extends gio::Application, Application,
         @implements gio::ActionGroup, gio::ActionMap;
 }
 
-impl AudiofxApplication {
+impl WavehackerApplication {
     pub fn new() -> Self {
         Object::builder()
-            .property("application-id", "audiofx.rs")
+            .property("application-id", "wavehacker.rs")
             .build()
     }
 }
 
 pub fn run() {
-    AudiofxApplication::new().run_with_args(&Vec::<String>::new());
+    WavehackerApplication::new().run_with_args(&Vec::<String>::new());
 }

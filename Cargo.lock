@@ -9,16 +9,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c7d0618f0e0b7e8ff11427422b64564d5fb0be1940354bfe2e0529b18a9d9b8"
 
 [[package]]
-name = "audiofx-rs"
-version = "0.1.0"
-dependencies = [
- "clap",
- "gtk4",
- "hound",
- "kahan",
-]
-
-[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -867,6 +857,16 @@ name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
+
+[[package]]
+name = "wavehacker"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "gtk4",
+ "hound",
+ "kahan",
+]
 
 [[package]]
 name = "winapi"

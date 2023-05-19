@@ -1,6 +1,7 @@
-# audiofx-rs
+# wavehacker
 
-Audio filters implemented in Rust.
+An early stage work in progress audio editor.
+Currently, it has very limited functionality on command line only.
 
 ## License
 
