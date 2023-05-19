@@ -18,7 +18,7 @@
 use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;
 
-use super::{widgets::ImageButton, WavehackerApplication};
+use super::{widgets::ImageButton, WavehackerApplication, WavehackerSidebar};
 use gtk4::glib::{self, Object, Sender};
 use gtk4::{gio, ApplicationWindow, FileDialog, HeaderBar, Widget, Window};
 
@@ -28,6 +28,7 @@ use std::cell::RefCell;
 pub struct WavehackerWindowImpl {
     open_button: RefCell<ImageButton>,
     save_button: RefCell<ImageButton>,
+    sidebar: RefCell<WavehackerSidebar>,
 }
 
 #[glib::object_subclass]
@@ -53,6 +54,9 @@ impl ObjectImpl for WavehackerWindowImpl {
         self.save_button.replace(save_button);
 
         self.obj().set_titlebar(Some(&header_bar));
+
+        let sidebar = self.sidebar.borrow().clone();
+        self.obj().set_child(Some(&sidebar));
     }
 }
 impl WidgetImpl for WavehackerWindowImpl {}
@@ -70,7 +74,7 @@ impl WavehackerWindow {
         Object::builder().property("application", app).build()
     }
 
-    pub fn setup_events(&self, tx: Sender<super::GuiEvent>) {
+    pub fn setup_actions(&self, tx: Sender<super::GuiEvent>) {
         let window = WavehackerWindowImpl::from_obj(self);
 
         window.open_button.borrow_mut().clone().connect_clicked(
@@ -84,6 +88,7 @@ impl WavehackerWindow {
                 Self::save_file(button, tx.clone());
             }),
         );
+        window.sidebar.borrow().setup_actions();
     }
 
     fn open_file(button: &ImageButton, tx: Sender<super::GuiEvent>) {

@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
 mod main_window;
+mod sidebar;
 mod widgets;
 
 use gtk4::prelude::*;
@@ -25,6 +26,8 @@ use gtk4::glib::{self, MainContext, Object, WeakRef, PRIORITY_DEFAULT};
 use gtk4::{gio, Application};
 
 use main_window::WavehackerWindow;
+use sidebar::WavehackerSidebar;
+
 use std::{cell::RefCell, rc::Rc};
 
 use hound::WavReader;
@@ -61,7 +64,7 @@ impl ApplicationImpl for WavehackerApplicationImpl {
         let (tx, rx) = MainContext::channel(PRIORITY_DEFAULT);
         let window = WavehackerWindow::new(&self.obj());
 
-        window.setup_events(tx);
+        window.setup_actions(tx);
         self.window.replace(Some(window.downgrade()));
         window.present();
 
