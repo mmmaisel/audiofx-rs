@@ -27,6 +27,8 @@ use gtk4::{gio, Application};
 use main_window::WavehackerWindow;
 use std::{cell::RefCell, rc::Rc};
 
+use hound::WavReader;
+
 pub enum GuiEvent {
     OpenFile(gio::File),
     SaveFile(gio::File),
@@ -64,19 +66,14 @@ impl ApplicationImpl for WavehackerApplicationImpl {
         window.present();
 
         let context = self.context.clone();
-        rx.attach(None, move |event| {
-            match event {
-                GuiEvent::OpenFile(file) => {
-                    println!("Opened {:?}", file.path().unwrap());
-                    // TODO: load file here
-                }
-                GuiEvent::SaveFile(file) => {
-                    println!("Saved {:?}", file.path().unwrap());
-                    // TODO: save result here
-                }
-            }
-            Continue(true)
-        });
+
+        let obj = self.obj();
+        rx.attach(
+            None,
+            glib::clone!(@strong obj as app => move |event| {
+                app.event_loop(event)
+            }),
+        );
     }
 }
 
@@ -93,6 +90,32 @@ impl WavehackerApplication {
         Object::builder()
             .property("application-id", "wavehacker.rs")
             .build()
+    }
+
+    fn event_loop(&self, event: GuiEvent) -> Continue {
+        match event {
+            GuiEvent::OpenFile(file) => {
+                // XXX: TODO: handle file format errors here
+                // XXX: move this to some model/controller logic
+                // TODO: load audio into grid data structure with LODs
+                println!("Opened {:?}", file.path().unwrap());
+                let file_stream =
+                    file.open_readwrite(None::<&gio::Cancellable>).unwrap();
+                let input_stream = file_stream.input_stream().into_read();
+                let input = WavReader::new(input_stream).unwrap();
+                let spec = input.spec();
+                let duration = input.duration();
+                eprintln!(
+                    "channels: {}, sample_rate: {}, length: {}",
+                    spec.channels, spec.sample_rate, duration,
+                );
+            }
+            GuiEvent::SaveFile(file) => {
+                println!("Saved {:?}", file.path().unwrap());
+                // TODO: save result here
+            }
+        }
+        Continue(true)
     }
 }
 

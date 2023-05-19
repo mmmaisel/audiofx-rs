@@ -73,50 +73,50 @@ impl WavehackerWindow {
     pub fn setup_events(&self, tx: Sender<super::GuiEvent>) {
         let window = WavehackerWindowImpl::from_obj(self);
 
-        let open_tx = tx.clone();
         window.open_button.borrow_mut().clone().connect_clicked(
-            move |button| {
-                let dialog = FileDialog::builder()
-                    .modal(true)
-                    .title("Open File")
-                    .build();
-
-                let open_tx2 = open_tx.clone();
-                dialog.open(
-                    Some(&button.root().unwrap().downcast::<Window>().unwrap()),
-                    None::<&gio::Cancellable>,
-                    move |result| {
-                        if let Ok(x) = result {
-                            open_tx2
-                                .send(super::GuiEvent::OpenFile(x))
-                                .unwrap();
-                        }
-                    },
-                );
-            },
+            glib::clone!(@strong tx => move |button| {
+                Self::open_file(button, tx.clone());
+            }),
         );
 
-        let save_tx = tx.clone();
         window.save_button.borrow_mut().clone().connect_clicked(
-            move |button| {
-                let dialog = FileDialog::builder()
-                    .modal(true)
-                    .title("Save File")
-                    .build();
+            glib::clone!(@strong tx => move |button| {
+                Self::save_file(button, tx.clone());
+            }),
+        );
+    }
 
-                let save_tx2 = save_tx.clone();
-                dialog.save(
-                    Some(&button.root().unwrap().downcast::<Window>().unwrap()),
-                    None::<&gio::Cancellable>,
-                    move |result| {
-                        if let Ok(x) = result {
-                            save_tx2
-                                .send(super::GuiEvent::SaveFile(x))
-                                .unwrap();
-                        }
-                    },
-                );
-            },
+    fn open_file(button: &ImageButton, tx: Sender<super::GuiEvent>) {
+        let dialog =
+            FileDialog::builder().modal(true).title("Open File").build();
+
+        dialog.open(
+            Some(&button.root().unwrap().downcast::<Window>().unwrap()),
+            None::<&gio::Cancellable>,
+            glib::clone!(@strong tx => move |result| {
+                if let Ok(x) = result {
+                    tx
+                        .send(super::GuiEvent::OpenFile(x))
+                        .unwrap();
+                }
+            }),
+        );
+    }
+
+    fn save_file(button: &ImageButton, tx: Sender<super::GuiEvent>) {
+        let dialog =
+            FileDialog::builder().modal(true).title("Save File").build();
+
+        dialog.save(
+            Some(&button.root().unwrap().downcast::<Window>().unwrap()),
+            None::<&gio::Cancellable>,
+            glib::clone!(@strong tx => move |result| {
+                if let Ok(x) = result {
+                    tx
+                        .send(super::GuiEvent::SaveFile(x))
+                        .unwrap();
+                }
+            }),
         );
     }
 }
