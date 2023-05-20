@@ -18,9 +18,14 @@
 use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;
 
-use super::{widgets::ImageButton, WavehackerApplication, WavehackerSidebar};
+use super::{
+    widgets::ImageButton, WavehackerApplication, WavehackerSidebar,
+    WavehackerWorkspace,
+};
 use gtk4::glib::{self, Object, Sender};
-use gtk4::{gio, ApplicationWindow, FileDialog, HeaderBar, Widget, Window};
+use gtk4::{
+    gio, ApplicationWindow, FileDialog, HeaderBar, Paned, Widget, Window,
+};
 
 use std::cell::RefCell;
 
@@ -29,6 +34,7 @@ pub struct WavehackerWindowImpl {
     open_button: RefCell<ImageButton>,
     save_button: RefCell<ImageButton>,
     sidebar: RefCell<WavehackerSidebar>,
+    workspace: RefCell<WavehackerWorkspace>,
 }
 
 #[glib::object_subclass]
@@ -52,11 +58,17 @@ impl ObjectImpl for WavehackerWindowImpl {
 
         self.open_button.replace(open_button);
         self.save_button.replace(save_button);
-
         self.obj().set_titlebar(Some(&header_bar));
 
+        let workspace = self.workspace.borrow().clone();
         let sidebar = self.sidebar.borrow().clone();
-        self.obj().set_child(Some(&sidebar));
+
+        let paned = Paned::builder()
+            .start_child(&workspace)
+            .end_child(&sidebar)
+            .build();
+
+        self.obj().set_child(Some(&paned));
     }
 }
 impl WidgetImpl for WavehackerWindowImpl {}

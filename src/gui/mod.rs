@@ -18,6 +18,7 @@
 mod main_window;
 mod sidebar;
 mod widgets;
+mod workspace;
 
 use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;
@@ -27,6 +28,7 @@ use gtk4::{gio, Application};
 
 use main_window::WavehackerWindow;
 use sidebar::WavehackerSidebar;
+use workspace::WavehackerWorkspace;
 
 use std::{cell::RefCell, rc::Rc};
 
