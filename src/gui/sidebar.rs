@@ -22,8 +22,8 @@ use gtk4::gio::{Menu, SimpleAction};
 use gtk4::glib::{self, Object, PropertySet};
 use gtk4::{
     Accessible, Actionable, Align, ApplicationWindow, Box, Buildable,
-    ConstraintTarget, Image, Label, ListBox, MenuButton, Orientation,
-    PolicyType, ScrolledWindow, SelectionMode, Widget,
+    ConstraintTarget, Image, Label, ListBox, MenuButton, Orientable,
+    Orientation, PolicyType, ScrolledWindow, SelectionMode, Widget,
 };
 
 use super::widgets::OpRow;
@@ -92,7 +92,8 @@ impl BoxImpl for WavehackerSidebarImpl {}
 glib::wrapper! {
     pub struct WavehackerSidebar(ObjectSubclass<WavehackerSidebarImpl>)
         @extends Box, Widget,
-        @implements Accessible, Actionable, Buildable, ConstraintTarget;
+        @implements Accessible, Actionable, Buildable, ConstraintTarget,
+            Orientable;
 }
 
 impl WavehackerSidebar {

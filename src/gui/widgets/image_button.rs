@@ -18,7 +18,7 @@
 use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;
 
-use gtk4::glib::{self, BindingFlags, Object, ParamSpec, Properties, Value};
+use gtk4::glib::{self, Object, ParamSpec, Properties, Value};
 use gtk4::{
     Accessible, Actionable, Box, Buildable, Button, ConstraintTarget, Image,
     Label, Orientation, Widget,
@@ -70,10 +70,10 @@ impl ObjectImpl for ImageButtonImpl {
         let obj = self.obj();
         obj.set_child(Some(&bx));
         obj.bind_property("label", &label, "label")
-            .flags(BindingFlags::SYNC_CREATE)
+            .sync_create()
             .build();
         obj.bind_property("icon", &icon, "icon-name")
-            .flags(BindingFlags::SYNC_CREATE)
+            .sync_create()
             .build();
     }
 }
