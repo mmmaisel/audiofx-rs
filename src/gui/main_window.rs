@@ -24,7 +24,8 @@ use super::{
 };
 use gtk4::glib::{self, Object, Sender};
 use gtk4::{
-    gio, ApplicationWindow, FileDialog, HeaderBar, Paned, Widget, Window,
+    gio, ApplicationWindow, FileDialog, HeaderBar, Paned, PolicyType,
+    ScrolledWindow, Widget, Window,
 };
 
 use std::cell::RefCell;
@@ -63,8 +64,14 @@ impl ObjectImpl for WavehackerWindowImpl {
         let workspace = self.workspace.borrow().clone();
         let sidebar = self.sidebar.borrow().clone();
 
+        let workspace_scroll = ScrolledWindow::builder()
+            .child(&workspace)
+            .hscrollbar_policy(PolicyType::Never)
+            .vscrollbar_policy(PolicyType::Always)
+            .build();
+
         let paned = Paned::builder()
-            .start_child(&workspace)
+            .start_child(&workspace_scroll)
             .end_child(&sidebar)
             .build();
 
