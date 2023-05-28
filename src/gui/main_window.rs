@@ -51,6 +51,7 @@ impl ObjectImpl for WavehackerWindowImpl {
 
         // TODO: new, export, wave-view, spec-view
         // TODO: list view with "add-action" button
+        let obj = self.obj();
         let open_button = ImageButton::new("Open", "document-open");
         let save_button = ImageButton::new("Save", "document-save");
         let header_bar = HeaderBar::builder().build();
@@ -59,7 +60,9 @@ impl ObjectImpl for WavehackerWindowImpl {
 
         self.open_button.replace(open_button);
         self.save_button.replace(save_button);
-        self.obj().set_titlebar(Some(&header_bar));
+
+        obj.set_default_size(640, 480);
+        obj.set_titlebar(Some(&header_bar));
 
         let workspace = self.workspace.borrow().clone();
         let sidebar = self.sidebar.borrow().clone();
@@ -73,9 +76,10 @@ impl ObjectImpl for WavehackerWindowImpl {
         let paned = Paned::builder()
             .start_child(&workspace_scroll)
             .end_child(&sidebar)
+            .position(480)
             .build();
 
-        self.obj().set_child(Some(&paned));
+        obj.set_child(Some(&paned));
     }
 }
 impl WidgetImpl for WavehackerWindowImpl {}

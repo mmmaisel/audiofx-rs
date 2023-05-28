@@ -15,8 +15,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
+mod audio_track;
 mod image_button;
 mod op_row;
+mod timeline;
+mod waveform;
 
+pub use audio_track::AudioTrack;
 pub use image_button::ImageButton;
 pub use op_row::OpRow;
+pub use timeline::Timeline;
+pub use waveform::Waveform;

@@ -28,6 +28,8 @@ use gtk4::{
 
 use std::cell::RefCell;
 
+use super::widgets::{AudioTrack, Timeline};
+
 #[derive(Default)]
 struct WorkspaceLayoutImpl {}
 
@@ -51,9 +53,9 @@ impl LayoutManagerImpl for WorkspaceLayoutImpl {
         let wsobj = widget.clone().downcast::<WavehackerWorkspace>().unwrap();
         let ws = WavehackerWorkspaceImpl::from_obj(&wsobj);
 
-        let hy = ws.header.borrow().measure(Orientation::Vertical, -1);
+        let hy = ws.timeline.borrow().measure(Orientation::Vertical, -1);
 
-        ws.header
+        ws.timeline
             .borrow()
             .size_allocate(&Rectangle::new(0, 0, width, hy.1), baseline);
 
@@ -72,7 +74,7 @@ impl LayoutManagerImpl for WorkspaceLayoutImpl {
         let wsobj = widget.clone().downcast::<WavehackerWorkspace>().unwrap();
         let ws = WavehackerWorkspaceImpl::from_obj(&wsobj);
         let vp_meas = ws.viewport.borrow().measure(orientation, for_size);
-        let hd_meas = ws.header.borrow().measure(orientation, for_size);
+        let hd_meas = ws.timeline.borrow().measure(orientation, for_size);
         (vp_meas.0 + hd_meas.0, vp_meas.1 + hd_meas.1, -1, -1)
     }
 }
@@ -100,7 +102,7 @@ pub struct WavehackerWorkspaceImpl {
     #[property(get, set, override_interface = Scrollable)]
     vscroll_policy: RefCell<ScrollablePolicy>,
 
-    pub header: RefCell<Label>,
+    pub timeline: RefCell<Timeline>,
     pub viewport: RefCell<Viewport>,
 }
 
@@ -111,7 +113,7 @@ impl Default for WavehackerWorkspaceImpl {
             hscroll_policy: ScrollablePolicy::Natural.into(),
             vadjustment: None.into(),
             vscroll_policy: ScrollablePolicy::Natural.into(),
-            header: Label::default().into(),
+            timeline: Timeline::default().into(),
             viewport: Viewport::default().into(),
         }
     }
@@ -142,7 +144,7 @@ impl ObjectImpl for WavehackerWorkspaceImpl {
         self.parent_constructed();
 
         let obj = self.obj();
-        let header = self.header.borrow();
+        let timeline = self.timeline.borrow();
         let viewport = self.viewport.borrow();
 
         obj.set_spacing(4);
@@ -157,14 +159,11 @@ impl ObjectImpl for WavehackerWorkspaceImpl {
             .vexpand(true)
             .build();
 
-        for i in 0..10 {
-            let dummy = Label::builder()
-                .label(format!("Hello Workspace {}!", i))
-                .build();
-            op_list.append(&dummy);
+        for i in 0..5 {
+            let track = AudioTrack::default();
+            op_list.append(&track);
         }
 
-        header.set_label("Foobar on top");
         viewport.set_child(Some(&op_list));
 
         // TODO: add timeline, listbox for tracks, and player widgets
@@ -183,7 +182,7 @@ impl ObjectImpl for WavehackerWorkspaceImpl {
         .sync_create()
         .build();
 
-        self.obj().append(&self.header.borrow().clone());
+        self.obj().append(&self.timeline.borrow().clone());
         self.obj().append(&self.viewport.borrow().clone());
     }
 }
