@@ -27,7 +27,9 @@ use gtk4::{
 use super::Waveform;
 
 #[derive(Default)]
-pub struct AudioTrackImpl {}
+pub struct AudioTrackImpl {
+    waveform: Waveform,
+}
 
 #[glib::object_subclass]
 impl ObjectSubclass for AudioTrackImpl {
@@ -49,7 +51,6 @@ impl ObjectImpl for AudioTrackImpl {
         let button = Button::builder().label("Mute").build();
         bx.append(&label);
         bx.append(&button);
-        let wave = Waveform::default();
 
         let obj = self.obj();
         obj.set_spacing(4);
@@ -58,7 +59,7 @@ impl ObjectImpl for AudioTrackImpl {
         obj.set_margin_start(4);
         obj.set_margin_end(4);
         obj.append(&bx);
-        obj.append(&wave);
+        obj.append(&self.waveform);
     }
 }
 
@@ -75,5 +76,12 @@ glib::wrapper! {
 impl Default for AudioTrack {
     fn default() -> Self {
         Object::builder().build()
+    }
+}
+
+impl AudioTrack {
+    pub fn waveform(&self) -> &Waveform {
+        let imp = AudioTrackImpl::from_obj(&self);
+        &imp.waveform
     }
 }

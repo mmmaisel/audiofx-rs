@@ -69,8 +69,8 @@ impl ObjectImpl for WavehackerWindowImpl {
 
         let workspace_scroll = ScrolledWindow::builder()
             .child(&workspace)
-            .hscrollbar_policy(PolicyType::Never)
-            .vscrollbar_policy(PolicyType::Always)
+            .hscrollbar_policy(PolicyType::Automatic)
+            .vscrollbar_policy(PolicyType::Automatic)
             .build();
 
         let paned = Paned::builder()

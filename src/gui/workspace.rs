@@ -22,8 +22,8 @@ use gtk4::gdk::Rectangle;
 use gtk4::glib::{self, Object, ParamSpec, Properties, Value};
 use gtk4::{
     Accessible, Actionable, Adjustment, Box, Buildable, ConstraintTarget,
-    Label, LayoutManager, ListBox, Orientable, Orientation, Overflow,
-    Scrollable, ScrollablePolicy, SelectionMode, Viewport, Widget,
+    LayoutManager, ListBox, Orientable, Orientation, Overflow, Scrollable,
+    ScrollablePolicy, SelectionMode, Viewport, Widget,
 };
 
 use std::cell::RefCell;
@@ -161,15 +161,37 @@ impl ObjectImpl for WavehackerWorkspaceImpl {
 
         for i in 0..5 {
             let track = AudioTrack::default();
+            obj.bind_property(
+                "hadjustment",
+                &track.waveform().clone(),
+                "hadjustment",
+            )
+            .sync_create()
+            .build();
+            obj.bind_property(
+                "hscroll-policy",
+                &track.waveform().clone(),
+                "hscroll-policy",
+            )
+            .sync_create()
+            .build();
             op_list.append(&track);
         }
 
         viewport.set_child(Some(&op_list));
 
-        // TODO: add timeline, listbox for tracks, and player widgets
-        // TODO: link scrollers for track headers
-        // TODO: implement scrollable for workspace,
-        //      redirect hscroll to plots and vscroll to listbox viewport
+        // TODO: add player widgets
+
+        obj.bind_property("hadjustment", &timeline.clone(), "hadjustment")
+            .sync_create()
+            .build();
+        obj.bind_property(
+            "hscroll-policy",
+            &timeline.clone(),
+            "hscroll-policy",
+        )
+        .sync_create()
+        .build();
 
         obj.bind_property("vadjustment", &viewport.clone(), "vadjustment")
             .sync_create()
